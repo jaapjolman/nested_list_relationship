@@ -10,17 +10,17 @@
  * @link		http://
  */
 
-class Field_master_detail_relationships
+class Field_Nested_list_relationship
 {
-	public $field_type_name			= 'Master Detail Relationships';
+	public $field_type_name			= 'Nested List Relationship';
 
-	public $field_type_slug			= 'master_detail_relationships';
+	public $field_type_slug			= 'nested_list_relationship';
 	
 	public $db_col_type				= 'text';
 
 	public $alt_process				= true;
 
-	public $custom_parameters		= array('master_detail_stream', 'allow_disabled_status');
+	public $custom_parameters		= array('nested_list_stream', 'allow_disabled');
 
 	public $version					= '1.1';
 
@@ -38,7 +38,7 @@ class Field_master_detail_relationships
 	 */
 	public function event()
 	{
-		$this->CI->type->add_css('master_detail_relationships', 'master_detail_relationships.css');
+		$this->CI->type->add_css('nested_list_relationship', 'nested_list_relationship.css');
 	}
 
 	// --------------------------------------------------------------------------
@@ -60,11 +60,11 @@ class Field_master_detail_relationships
 		if ( ! isset($_POST['tree-item']) ) return '';
 
 		// Get slug streams
-		$master_detail_stream = $this->CI->streams_m->get_stream($field->field_data['master_detail_stream']);
+		$nested_list_stream = $this->CI->streams_m->get_stream($field->field_data['nested_list_stream']);
 		
 		
 		// Make a tablename
-		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$master_detail_stream->stream_slug;
+		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug;
 
 
 		// Delete what we can (ignore disabled)
@@ -77,7 +77,7 @@ class Field_master_detail_relationships
 			// Nope, insert it
 			$this->CI->db->insert($table_name, array(
 				$stream->stream_slug.'_id' => $id,
-			  	$master_detail_stream->stream_slug.'_id' => $master_detail_id,
+			  	$nested_list_stream->stream_slug.'_id' => $master_detail_id,
 			  	'disabled' => 0
 				)
 			);
@@ -101,16 +101,16 @@ class Field_master_detail_relationships
 	 */
 	public function alt_pre_output($row_id, $extra, $type, $stream)
 	{
-		if ( ! $master_detail_stream = $this->CI->streams_m->get_stream($extra['master_detail_stream'])) return null;
+		if ( ! $nested_list_stream = $this->CI->streams_m->get_stream($extra['nested_list_stream'])) return null;
 
 		// -------------------------------------
 		// Get the results from the table
 		// -------------------------------------
 
 		$q = $this->CI->db
-				->select($master_detail_stream->stream_slug.'_id')
+				->select($nested_list_stream->stream_slug.'_id')
 				->where($stream->stream_slug.'_id', $row_id)
-				->get($stream->stream_prefix.$stream->stream_slug.'_'.$master_detail_stream->stream_slug)
+				->get($stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug)
 				->result();
 				
 		// -------------------------------------
@@ -118,7 +118,7 @@ class Field_master_detail_relationships
 		// -------------------------------------
 
 		$nodes = array();
-		$column = $master_detail_stream->stream_slug.'_id';
+		$column = $nested_list_stream->stream_slug.'_id';
 
 		foreach ($q as $node)
 		{
@@ -138,17 +138,17 @@ class Field_master_detail_relationships
 		$this->CI->load->dbforge();
 				
 		// Get the stream we are attaching to.
-		$master_detail_stream = $this->CI->streams_m->get_stream($field->field_data['master_detail_stream']);
+		$nested_list_stream = $this->CI->streams_m->get_stream($field->field_data['nested_list_stream']);
 		
 		// Make a tablename
-		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$master_detail_stream->stream_slug;
+		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug;
 
 		$fields = array(
 			$stream->stream_slug.'_id' => array(
 				'type' => 'INT',
 				'constraint' => 11
 				),
-			$master_detail_stream->stream_slug.'_id' => array(
+			$nested_list_stream->stream_slug.'_id' => array(
 				'type' => 'INT',
 				'constraint' => 11
 				),
@@ -166,12 +166,12 @@ class Field_master_detail_relationships
 
 		// A little optimization
 		$this->CI->dbforge->add_key($stream->stream_slug.'_id');
-		$this->CI->dbforge->add_key($master_detail_stream->stream_slug.'_id');
+		$this->CI->dbforge->add_key($nested_list_stream->stream_slug.'_id');
 
 		$this->CI->dbforge->create_table($table_name);
 
 		// Make the entries unique. Last thing we need is two relationships to the same master_detail item
-		$this->CI->db->query('ALTER TABLE `'.$this->CI->db->dbprefix($table_name).'` ADD UNIQUE INDEX `Unique Relationships` (`'.$stream->stream_slug.'_id'.'`, `'.$master_detail_stream->stream_slug.'_id'.'`)');
+		$this->CI->db->query('ALTER TABLE `'.$this->CI->db->dbprefix($table_name).'` ADD UNIQUE INDEX `Unique Relationships` (`'.$stream->stream_slug.'_id'.'`, `'.$nested_list_stream->stream_slug.'_id'.'`)');
 
 		// Add the column
 		$this->CI->dbforge->add_column($stream->stream_prefix.$stream->stream_slug, array($field->field_slug => array('type' => 'LONGTEXT', 'null' => TRUE)));
@@ -193,16 +193,16 @@ class Field_master_detail_relationships
 	{
 
 		// Get the stream we are referring to.
-		$master_detail_stream = $this->CI->streams_m->get_stream($field->field_data['master_detail_stream']);
+		$nested_list_stream = $this->CI->streams_m->get_stream($field->field_data['nested_list_stream']);
 		
 		// @todo:
 		// If the linked stream was already deleted, we have a bit
 		// of a problem since we can't get the stream slug.
 		// Until we figure that out, here's this:
-		if ( ! $master_detail_stream OR ! isset($stream->stream_prefix) OR ! isset($stream->stream_slug)) return null;
+		if ( ! $nested_list_stream OR ! isset($stream->stream_prefix) OR ! isset($stream->stream_slug)) return null;
 				
 		// Get the table name
-		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$master_detail_stream->stream_slug;
+		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug;
 		
 		// Remove the table		
 		$this->CI->dbforge->drop_table($table_name);
@@ -226,10 +226,10 @@ class Field_master_detail_relationships
 	public function entry_destruct($entry, $field, $stream)
 	{
 		// Delete the entries in our binding table
-		$master_detail_stream = $this->CI->streams_m->get_stream($field->field_data['master_detail_stream']);
+		$nested_list_stream = $this->CI->streams_m->get_stream($field->field_data['nested_list_stream']);
 				
 		// Get the table name
-		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$master_detail_stream->stream_slug;
+		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug;
 		
 		// Delete em
 		$this->CI->db->where($stream->slug.'_id', $entry->id)->delete($table_name);
@@ -248,31 +248,31 @@ class Field_master_detail_relationships
 	{
 
 		// Get master detail stream
-		$master_detail_stream = $this->CI->streams_m->get_stream($data['custom']['master_detail_stream']);
+		$nested_list_stream = $this->CI->streams_m->get_stream($data['custom']['nested_list_stream']);
 
-		if ( ! $master_detail_stream )
+		if ( ! $nested_list_stream )
 		{
-			return '<em>'.$data['custom']['master_detail_stream'].' '.$this->CI->lang->line('streams.relationship.doesnt_exist').'</em>';
+			return '<em>'.$data['custom']['nested_list_stream'].' '.$this->CI->lang->line('streams.relationship.doesnt_exist').'</em>';
 		}
 
 		
 		// Make a table
-		$table_name = $field->stream_prefix.$field->stream_slug.'_'.$master_detail_stream->stream_slug;
+		$table_name = $field->stream_prefix.$field->stream_slug.'_'.$nested_list_stream->stream_slug;
 
 		
 		// Get the title column
-		$data['title_column'] = $master_detail_stream->title_column;
+		$data['title_column'] = $nested_list_stream->title_column;
 
 		
 		// Default to ID for title column
-		if ( ! trim($data['title_column']) or !$this->CI->db->field_exists($data['title_column'], $master_detail_stream->stream_prefix.$master_detail_stream->stream_slug))
+		if ( ! trim($data['title_column']) or !$this->CI->db->field_exists($data['title_column'], $nested_list_stream->stream_prefix.$nested_list_stream->stream_slug))
 		{
 			$data['title_column'] = 'id';
 		}
 
 
 		// Get the tree
-		$data['tree'] = $this->_get_tree($master_detail_stream);
+		$data['tree'] = $this->_get_tree($nested_list_stream);
 
 		
 		// Asign info
@@ -292,13 +292,13 @@ class Field_master_detail_relationships
 
 			// Get the enabled ones
 			$q = $this->CI->db
-					->select($master_detail_stream->stream_slug.'_id')
+					->select($nested_list_stream->stream_slug.'_id')
 					->where('disabled', 0)
 					->where($field->stream_slug.'_id', $entry_id)
 					->get($table_name)
 					->result();
 
-			$column = $master_detail_stream->stream_slug.'_id';
+			$column = $nested_list_stream->stream_slug.'_id';
 
 			// Add them
 			foreach ( $q as $row )
@@ -308,18 +308,18 @@ class Field_master_detail_relationships
 		}
 
 		// Grab the disabled ones too damnit..
-		if ( $data['custom']['allow_disabled_status'] AND is_numeric($entry_id) )
+		if ( $data['custom']['allow_disabled'] AND is_numeric($entry_id) )
 		{
 
 			// Aaand the disabled ones
 			$q = $this->CI->db
-					->select($master_detail_stream->stream_slug.'_id')
+					->select($nested_list_stream->stream_slug.'_id')
 					->where('disabled', 1)
 					->where($field->stream_slug.'_id', $entry_id)
 					->get($table_name)
 					->result();
 
-			$column = $master_detail_stream->stream_slug.'_id';
+			$column = $nested_list_stream->stream_slug.'_id';
 
 			// Add them
 			foreach ( $q as $row )
@@ -330,7 +330,7 @@ class Field_master_detail_relationships
 		
 		
 		// Build that fucker
-		return $this->CI->type->load_view('master_detail_relationships', 'tree_form', $data);
+		return $this->CI->type->load_view('nested_list_relationship', 'tree_form', $data);
 	}
 
 	// --------------------------------------------------------------------------
@@ -341,7 +341,7 @@ class Field_master_detail_relationships
 	 * @access	public
 	 * @return	string
 	 */
-	public function param_master_detail_stream($stream_id = false)
+	public function param_nested_list_stream($stream_id = false)
 	{
 		$choices = array();
 
@@ -357,7 +357,7 @@ class Field_master_detail_relationships
 			}
 		}
 		
-		return form_dropdown('master_detail_stream', $choices, $stream_id);
+		return form_dropdown('nested_list_stream', $choices, $stream_id);
 	}
 
 	// --------------------------------------------------------------------------
@@ -368,9 +368,9 @@ class Field_master_detail_relationships
 	 * @access	public
 	 * @return	string
 	 */
-	public function param_allow_disabled_status($choice = 0)
+	public function param_allow_disabled($choice = 0)
 	{		
-		return form_dropdown('allow_disabled_status', array(0 => lang('global:disable'), 1 => lang('global:enable')), $choice);
+		return form_dropdown('allow_disabled', array(0 => lang('global:disable'), 1 => lang('global:enable')), $choice);
 	}
 
 	// --------------------------------------------------------------------------

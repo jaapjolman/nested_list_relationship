@@ -32,7 +32,7 @@
 
 <?php else: ?>
 
-	<?php echo lang('streams.master_detail_relationships.empty'); ?>
+	<?php echo lang('streams.nested_list_relationship.empty'); ?>
 
 <?php endif; ?>
 

@@ -1,2 +1,2 @@
-master_detail_relationships
+nested_list_relationship
 ===========================

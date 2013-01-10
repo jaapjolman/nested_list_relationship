@@ -232,7 +232,7 @@ class Field_Nested_list_relationship
 		$table_name = $stream->stream_prefix.$stream->stream_slug.'_'.$nested_list_stream->stream_slug;
 		
 		// Delete em
-		$this->CI->db->where($stream->slug.'_id', $entry->id)->delete($table_name);
+		$this->CI->db->where($stream->stream_slug.'_id', $entry->id)->delete($table_name);
 	}
 
 	// --------------------------------------------------------------------------

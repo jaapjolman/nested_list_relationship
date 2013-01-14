@@ -173,9 +173,6 @@ class Field_Nested_list_relationship
 		// Make the entries unique. Last thing we need is two relationships to the same master_detail item
 		$this->CI->db->query('ALTER TABLE `'.$this->CI->db->dbprefix($table_name).'` ADD UNIQUE INDEX `Unique Relationships` (`'.$stream->stream_slug.'_id'.'`, `'.$nested_list_stream->stream_slug.'_id'.'`)');
 
-		// Add the column
-		$this->CI->dbforge->add_column($stream->stream_prefix.$stream->stream_slug, array($field->field_slug => array('type' => 'LONGTEXT', 'null' => TRUE)));
-
 		return true;
 	}
 
